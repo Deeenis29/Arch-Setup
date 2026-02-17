@@ -1,6 +1,6 @@
 # 🐧 Arch Linux + Hyprland Setup Guide
 
-📍 **[Versión en Español](README.es.md)** | [English Version]
+📍 **[Versión en Español](README.es.md)**
 
 ---
 
