@@ -227,6 +227,27 @@ cd ~/.config/hypr && git init && git add -A && git commit -m "initial state"
 
 Full reference with file tree and task table: https://claude.ai/code/artifact/4cbc1c38-d102-46a0-91c4-65c46b216fe2 (private artifact, only visible logged into your account)
 
+## 9️⃣ Tailscale + Syncthing (remote access & phone photo backup)
+
+Purpose: SSH into this machine from anywhere via Tailscale, and auto-sync phone photos in original quality (no more WhatsApp "send as document" workaround).
+
+```bash
+sudo pacman -S --needed tailscale syncthing
+sudo systemctl enable --now tailscaled
+sudo systemctl enable --now syncthing@<your-username>.service
+sudo tailscale up   # opens a login URL, authenticate in the browser
+```
+
+Syncthing's web UI is at `http://localhost:8384` (localhost-only by default — that's fine, folder pairing only needs to happen once from the machine itself). Install the Syncthing app on the phone, add this PC by Device ID (found in the web UI), accept the folder share from the phone side, then accept it on the PC side and pick a real destination path.
+
+### Gotchas that actually happened here
+
+- **Turn OFF "Introducer" on at least one side.** With it on both ends, the phone auto-shared *every* other folder it had configured (WhatsApp Documents, WhatsApp Images) on top of the one folder we wanted — not obvious until it happens. In the web UI: Remote Devices → your phone → Edit → uncheck Introducer.
+- **"Auto Accept Folders" picks the destination path from the folder's label**, which can literally be something like `Camera` — Syncthing then tries `mkdir /Camera` at the filesystem root and fails with `permission denied`. Turn Auto Accept off, or always double-check/fix the path after an auto-accept.
+- **Never point two folder definitions at the same or a nested directory.** Doing so (even briefly) risks index corruption. If you catch it, pause the extra folder immediately from the web UI before doing anything else.
+- **Moving a folder to a new path triggers `folder marker missing`** (a safety check against writing to the wrong place). Fix: `touch <new-path>/.stfolder`, then trigger a rescan (web UI folder → Rescan, or `POST /rest/db/scan?folder=<id>` with the API key from `~/.local/state/syncthing/config.xml`).
+- **If two devices show `Disconnected`/`Never seen` despite being on the same WiFi**, it's almost always Android battery optimization killing the app in the background, not a firewall (Arch ships with no firewall active by default — verified via `systemctl is-active ufw firewalld nftables`, all inactive). Open the app in the foreground once, and disable battery optimization for it.
+
 ---
 
 ## 🔐 Important Backup (BEFORE formatting)

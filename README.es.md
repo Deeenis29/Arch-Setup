@@ -227,6 +227,27 @@ cd ~/.config/hypr && git init && git add -A && git commit -m "estado inicial"
 
 Referencia completa con árbol de archivos y tabla de tareas: https://claude.ai/code/artifact/4cbc1c38-d102-46a0-91c4-65c46b216fe2 (artifact privado, solo visible logueado en tu cuenta)
 
+## 9️⃣ Tailscale + Syncthing (acceso remoto y respaldo de fotos del teléfono)
+
+Propósito: entrar por SSH a esta PC desde donde sea vía Tailscale, y sincronizar fotos del teléfono en calidad original (sin el truco de mandarlas por WhatsApp como "documento").
+
+```bash
+sudo pacman -S --needed tailscale syncthing
+sudo systemctl enable --now tailscaled
+sudo systemctl enable --now syncthing@<tu-usuario>.service
+sudo tailscale up   # abre un link de login, autenticarse en el navegador
+```
+
+El panel web de Syncthing está en `http://localhost:8384` (solo localhost por defecto — está bien, el pareo solo hace falta hacerlo una vez desde la propia PC). Instala la app de Syncthing en el teléfono, agrega esta PC por su Device ID (aparece en el panel web), acepta la carpeta compartida desde el teléfono, y acéptala también del lado de la PC eligiendo una ruta de destino real.
+
+### Problemas reales que pasaron acá
+
+- **Apaga "Introducer" en al menos un lado.** Con los dos activados, el teléfono compartió automáticamente *todas* sus otras carpetas configuradas (WhatsApp Documents, WhatsApp Images) además de la que queríamos — no es obvio hasta que pasa. En el panel web: Remote Devices → tu teléfono → Edit → desmarcar Introducer.
+- **"Auto Accept Folders" elige la ruta de destino a partir de la etiqueta de la carpeta**, que puede ser literalmente algo como `Camera` — Syncthing intenta entonces `mkdir /Camera` en la raíz del sistema de archivos y falla con `permission denied`. Apaga Auto Accept, o revisa/corrige siempre la ruta después de un auto-accept.
+- **Nunca apuntes dos carpetas distintas a la misma ruta, ni una anidada dentro de otra.** Aunque sea por poco tiempo, arriesga corromper el índice. Si lo detectas, pausa la carpeta de más inmediatamente desde el panel web antes de hacer cualquier otra cosa.
+- **Mover una carpeta a una ruta nueva dispara `folder marker missing`** (una protección contra escribir en el lugar equivocado). Solución: `touch <ruta-nueva>/.stfolder`, y luego forzar un rescan (panel web, carpeta → Rescan, o `POST /rest/db/scan?folder=<id>` con la API key de `~/.local/state/syncthing/config.xml`).
+- **Si dos dispositivos aparecen `Disconnected`/`Never seen` estando en la misma WiFi**, casi siempre es la optimización de batería de Android matando la app en segundo plano, no un firewall (Arch no trae ningún firewall activo por defecto — verificado con `systemctl is-active ufw firewalld nftables`, todos inactivos). Abre la app en primer plano una vez, y desactiva la optimización de batería para ella.
+
 ---
 
 ## 🔐 Respaldo importante (ANTES de formatear)
