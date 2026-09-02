@@ -248,6 +248,35 @@ El panel web de Syncthing está en `http://localhost:8384` (solo localhost por d
 - **Mover una carpeta a una ruta nueva dispara `folder marker missing`** (una protección contra escribir en el lugar equivocado). Solución: `touch <ruta-nueva>/.stfolder`, y luego forzar un rescan (panel web, carpeta → Rescan, o `POST /rest/db/scan?folder=<id>` con la API key de `~/.local/state/syncthing/config.xml`).
 - **Si dos dispositivos aparecen `Disconnected`/`Never seen` estando en la misma WiFi**, casi siempre es la optimización de batería de Android matando la app en segundo plano, no un firewall (Arch no trae ningún firewall activo por defecto — verificado con `systemctl is-active ufw firewalld nftables`, todos inactivos). Abre la app en primer plano una vez, y desactiva la optimización de batería para ella.
 
+## 🔟 Edición de video: Kdenlive + DaVinci Resolve
+
+Kdenlive (instalado vía `scripts/install-toolkit.sh`) no necesita nada especial — solo `sudo pacman -S --needed kdenlive`.
+
+DaVinci Resolve está en AUR pero la licencia de Blackmagic prohíbe redistribuir el instalador, así que el PKGBUILD espera que ya lo tengas. También necesita `opencl-nvidia` en este setup híbrido con NVIDIA para aceleración por GPU:
+
+```bash
+sudo pacman -S --needed opencl-nvidia
+```
+
+Luego, a mano:
+
+1. Ve a https://www.blackmagicdesign.com/products/davinciresolve/ → Download → Linux → versión gratis → regístrate con un email → descarga `DaVinci_Resolve_<version>_Linux.zip` (que coincida con la versión que muestra `yay -Si davinci-resolve`, ej. `21.0.4`).
+2. Muévelo al directorio de build de yay y verifica el checksum contra `.SRCINFO` antes de compilar (te ahorra volver a descargar ~3.75GB si no coincide):
+
+```bash
+mv ~/Downloads/DaVinci_Resolve_*_Linux.zip ~/.cache/yay/davinci-resolve/
+sha256sum ~/.cache/yay/davinci-resolve/DaVinci_Resolve_*_Linux.zip
+grep sha256sums -A2 ~/.cache/yay/davinci-resolve/PKGBUILD   # comparar el primer hash
+```
+
+3. `yay -S davinci-resolve`
+
+### La trampa que cuesta una re-descarga
+
+En el primer prompt, **`Packages to cleanBuild? [N]one [A]ll ...`, hay que responder `N` sí o sí**. Responder `A` borra toda la carpeta de build — incluido el zip que acabas de poner ahí — antes de siquiera buscarlo, así que falla con `curl: (3) URL rejected: Bad file:// URL` y hay que empezar de cero. Pasó dos veces acá antes de detectarlo.
+
+Después de instalar, abre DaVinci Resolve → Preferencias (⚙️) → Memory and GPU Configuration, y confirma que la GPU NVIDIA aparece listada en GPU Configuration con modo CUDA.
+
 ---
 
 ## 🔐 Respaldo importante (ANTES de formatear)

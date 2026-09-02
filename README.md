@@ -248,6 +248,35 @@ Syncthing's web UI is at `http://localhost:8384` (localhost-only by default — 
 - **Moving a folder to a new path triggers `folder marker missing`** (a safety check against writing to the wrong place). Fix: `touch <new-path>/.stfolder`, then trigger a rescan (web UI folder → Rescan, or `POST /rest/db/scan?folder=<id>` with the API key from `~/.local/state/syncthing/config.xml`).
 - **If two devices show `Disconnected`/`Never seen` despite being on the same WiFi**, it's almost always Android battery optimization killing the app in the background, not a firewall (Arch ships with no firewall active by default — verified via `systemctl is-active ufw firewalld nftables`, all inactive). Open the app in the foreground once, and disable battery optimization for it.
 
+## 🔟 Video Editing: Kdenlive + DaVinci Resolve
+
+Kdenlive (installed via `scripts/install-toolkit.sh`) needs nothing special — just `sudo pacman -S --needed kdenlive`.
+
+DaVinci Resolve is on the AUR but Blackmagic's license forbids redistributing the installer, so the PKGBUILD expects you to have it already. Also needs `opencl-nvidia` on this NVIDIA hybrid setup for GPU acceleration:
+
+```bash
+sudo pacman -S --needed opencl-nvidia
+```
+
+Then, manually:
+
+1. Go to https://www.blackmagicdesign.com/products/davinciresolve/ → Download → Linux → free version → register with an email → download `DaVinci_Resolve_<version>_Linux.zip` (match the version `yay -Si davinci-resolve` shows, e.g. `21.0.4`).
+2. Move it into yay's build dir and verify the checksum matches `.SRCINFO` before building (saves re-downloading ~3.75GB if it doesn't):
+
+```bash
+mv ~/Downloads/DaVinci_Resolve_*_Linux.zip ~/.cache/yay/davinci-resolve/
+sha256sum ~/.cache/yay/davinci-resolve/DaVinci_Resolve_*_Linux.zip
+grep sha256sums -A2 ~/.cache/yay/davinci-resolve/PKGBUILD   # compare first hash
+```
+
+3. `yay -S davinci-resolve`
+
+### The trap that costs a re-download
+
+The very first prompt, **`Packages to cleanBuild? [N]one [A]ll ...`, you MUST answer `N`**. Answering `A` wipes the entire build directory — including the zip you just placed — before it even looks for it, so it fails on `curl: (3) URL rejected: Bad file:// URL` and you're back to square one. Happened twice here before catching it.
+
+After install, launch DaVinci Resolve → Preferences (⚙️) → Memory and GPU Configuration, and confirm the NVIDIA GPU is listed under GPU Configuration with CUDA mode.
+
 ---
 
 ## 🔐 Important Backup (BEFORE formatting)
