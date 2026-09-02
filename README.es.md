@@ -111,6 +111,36 @@ yay -S visual-studio-code-bin
 yay -S discord
 ```
 
+### 🔹 Zen Browser
+
+```bash
+yay -S zen-browser-bin
+```
+
+### 🔹 Gwenview (visor de imágenes)
+
+```bash
+sudo pacman -S gwenview
+```
+
+### 🔹 Mousepad (editor de texto liviano)
+
+```bash
+sudo pacman -S mousepad
+```
+
+### 🔹 mpv (reproductor de video/media)
+
+```bash
+sudo pacman -S mpv
+```
+
+### 🔹 OnlyOffice (alternativa a Word/Excel/PowerPoint)
+
+```bash
+yay -S onlyoffice-bin
+```
+
 ## 7️⃣ Driver NVIDIA (laptop híbrida Intel + NVIDIA)
 
 Solo necesario si el equipo tiene GPU NVIDIA dedicada además de la integrada de Intel. El driver abierto arregla el stutter de Hyprland sobre nouveau y es necesario para edición de video acelerada por GPU (DaVinci Resolve).

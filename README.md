@@ -111,6 +111,36 @@ yay -S visual-studio-code-bin
 yay -S discord
 ```
 
+### 🔹 Zen Browser
+
+```bash
+yay -S zen-browser-bin
+```
+
+### 🔹 Gwenview (image viewer)
+
+```bash
+sudo pacman -S gwenview
+```
+
+### 🔹 Mousepad (lightweight text editor)
+
+```bash
+sudo pacman -S mousepad
+```
+
+### 🔹 mpv (video/media player)
+
+```bash
+sudo pacman -S mpv
+```
+
+### 🔹 OnlyOffice (Word/Excel/PowerPoint alternative)
+
+```bash
+yay -S onlyoffice-bin
+```
+
 ## 7️⃣ NVIDIA Driver (Intel + NVIDIA hybrid laptop)
 
 Only needed if the machine has a discrete NVIDIA GPU alongside Intel integrated graphics. The open kernel driver fixes Hyprland stutter on nouveau and is required for GPU-accelerated video editing (DaVinci Resolve).
