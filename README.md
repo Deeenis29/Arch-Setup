@@ -111,6 +111,92 @@ yay -S visual-studio-code-bin
 yay -S discord
 ```
 
+## 7️⃣ NVIDIA Driver (Intel + NVIDIA hybrid laptop)
+
+Only needed if the machine has a discrete NVIDIA GPU alongside Intel integrated graphics. The open kernel driver fixes Hyprland stutter on nouveau and is required for GPU-accelerated video editing (DaVinci Resolve).
+
+```bash
+sudo pacman -S --needed nvidia-open nvidia-utils nvidia-settings
+```
+
+> `nvidia-open` works for Turing GPUs and newer (GTX 16xx / RTX). For older cards use `nvidia` instead.
+
+### Early KMS
+
+Edit `/etc/mkinitcpio.conf` and change `MODULES=()` to:
+
+```
+MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)
+```
+
+Then regenerate the initramfs:
+
+```bash
+sudo mkinitcpio -P
+```
+
+### Boot parameter
+
+Find your systemd-boot entry:
+
+```bash
+ls /boot/loader/entries/
+sudo nano /boot/loader/entries/<your-entry>.conf
+```
+
+Append `nvidia-drm.modeset=1` to the end of the `options` line, e.g.:
+
+```
+options root=PARTUUID=... rw rootfstype=ext4 nvidia-drm.modeset=1
+```
+
+### Suspend/resume services
+
+```bash
+sudo systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
+```
+
+### PRIME offload (use the dGPU only on demand)
+
+Add to `~/.bashrc`, so the Intel GPU stays default (battery) and NVIDIA only kicks in when called explicitly:
+
+```bash
+nvidia-offload() {
+    __NV_PRIME_RENDER_OFFLOAD=1 __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0 \
+    __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only \
+    "$@"
+}
+```
+
+Usage: `nvidia-offload kdenlive`, `nvidia-offload davinci-resolve`
+
+### Reboot and verify
+
+```bash
+reboot
+nvidia-smi   # should list the GPU after reboot
+```
+
+## 8️⃣ Mapping dots-hyprland (what's safe to edit)
+
+dots-hyprland ("illogical-impulse") uses **Quickshell** (QML), not Waybar, for the bar/dock/sidebars. Key distinction after install:
+
+| Path | Status |
+|---|---|
+| `~/.config/hypr/custom/*.lua` | ✅ Safe — your layer, never touched by updates. Put keybinds/execs/rules/env here. |
+| `~/.config/hypr/hyprland/*.lua` | ⚠️ Managed — overwritten by `./setup exp-update`. |
+| `~/.config/quickshell/ii/modules/**/*.qml` | ⚠️ Managed, **no custom/ layer exists here** — editing the bar (`modules/ii/bar/`) means editing managed files directly. |
+| In-app settings panel (`settings.qml`) | 🔧 Check here first for common toggles before hand-editing QML. |
+
+**Right after installing dotfiles**, turn your live config into its own git repo so you can always diff/revert experiments:
+
+```bash
+cd ~/.config/quickshell && git init && git add -A && git commit -m "initial state"
+cd ~/.config/hypr && git init && git add -A && git commit -m "initial state"
+```
+
+Full reference with file tree and task table: https://claude.ai/code/artifact/4cbc1c38-d102-46a0-91c4-65c46b216fe2 (private artifact, only visible logged into your account)
+
 ---
 
 ## 🔐 Important Backup (BEFORE formatting)
